@@ -1,0 +1,14 @@
+[
+  {
+    "text": "Firebase single backend causes system failure during outage",
+    "tag": "backend risk"
+  },
+  {
+    "text": "Stripe API downtime blocks all payments",
+    "tag": "payment risk"
+  },
+  {
+    "text": "Monolithic systems fail under scaling pressure",
+    "tag": "architecture risk"
+  }
+]
