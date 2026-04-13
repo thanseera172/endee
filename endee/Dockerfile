@@ -1,21 +1,30 @@
 FROM ubuntu:22.04
 
+# Install required system tools
 RUN apt update && apt install -y \
     build-essential \
     cmake \
     git \
-    libboost-all-dev
+    curl \
+    unzip \
+    libboost-all-dev \
+    libssl-dev \
+    libcurl4-openssl-dev
 
+# Set working directory
 WORKDIR /app
+
+# Copy project
 COPY . .
 
-# FORCE install Crow headers
-RUN git clone https://github.com/CrowCpp/Crow.git /usr/local/include/crow
-
+# Make scripts executable
 RUN chmod +x install.sh run.sh
 
-RUN ./install.sh --release --skip-deps
+# Build everything (install deps + Crow + compile)
+RUN ./install.sh
 
-RUN mkdir -p build && cd build && cmake .. && make
+# Expose port (optional but recommended for backend servers)
+EXPOSE 8080
 
+# Run compiled binary
 CMD ["./build/endee"]
