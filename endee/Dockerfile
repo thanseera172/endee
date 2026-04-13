@@ -3,18 +3,19 @@ FROM ubuntu:22.04
 RUN apt update && apt install -y \
     build-essential \
     cmake \
-    git
+    git \
+    libboost-all-dev
 
 WORKDIR /app
 COPY . .
 
+# FORCE install Crow headers
+RUN git clone https://github.com/CrowCpp/Crow.git /usr/local/include/crow
+
 RUN chmod +x install.sh run.sh
 
-# IMPORTANT: pass proper build mode
 RUN ./install.sh --release --skip-deps
 
-# build explicitly (VERY IMPORTANT)
 RUN mkdir -p build && cd build && cmake .. && make
 
-# tell Render what to run
 CMD ["./build/endee"]
