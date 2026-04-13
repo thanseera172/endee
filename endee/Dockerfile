@@ -18,22 +18,23 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
 # Copy project
 COPY . .
 
-# Install Crow manually (more stable than install.sh)
+# Install Crow (required for your server)
 RUN git clone https://github.com/CrowCpp/Crow.git /tmp/crow && \
     cp -r /tmp/crow/include/crow /usr/local/include/
 
-# Make scripts executable
-RUN chmod +x install.sh run.sh
+# Make scripts executable (optional but safe)
+RUN chmod +x install.sh run.sh || true
 
-# Build project
+# =========================
+# BUILD YOUR PROJECT (FIXED)
+# =========================
 RUN mkdir -p build && cd build && \
-    cmake .. && \
+    cmake /app && \
     make -j$(nproc)
 
 
@@ -44,7 +45,7 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Runtime dependencies only
+# Runtime libraries only
 RUN apt-get update && apt-get install -y \
     libssl3 \
     libcurl4 \
@@ -52,19 +53,21 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy built binary + frontend + required runtime files
+# Copy binary
 COPY --from=builder /app/build/endee /app/endee
+
+# Copy frontend (React build)
 COPY --from=builder /app/frontend /app/frontend
 
-# Ensure data directory exists
+# Data directory (Render-safe)
 RUN mkdir -p /tmp/data
 
-# Environment defaults (Render overrides these)
+# Environment variables (Render overrides these)
 ENV NDD_DATA_DIR=/tmp/data
 ENV NDD_AUTH_TOKEN=
 
-# Expose port (Render uses this)
+# Render port
 EXPOSE 8080
 
-# Run server
+# Start server
 CMD ["./endee"]
