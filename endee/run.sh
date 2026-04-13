@@ -4,13 +4,17 @@ set -euo pipefail
 log()   { printf "[INFO] %s\n" "$*"; }
 error() { printf "[ERROR] %s\n" "$*" >&2; }
 
-# Default binary path (IMPORTANT FIX)
+########################################
+# DEFAULT CONFIG
+########################################
 BINARY_FILE="./build/endee"
 
-# Optional args (kept for compatibility)
 NDD_DATA_DIR="./data"
 NDD_AUTH_TOKEN=""
 
+########################################
+# HELP
+########################################
 print_help() {
     cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
@@ -21,10 +25,13 @@ Options:
   --help, -h           Show help
 
 Description:
-  Runs the compiled endee binary.
+  Runs the compiled endee backend server.
 EOF
 }
 
+########################################
+# ARG PARSING
+########################################
 main() {
 
     for ARG in "$@"; do
@@ -42,15 +49,34 @@ main() {
         esac
     done
 
-    # CHECK binary exists
+    ########################################
+    # VALIDATE BINARY
+    ########################################
     if [[ ! -f "$BINARY_FILE" ]]; then
-        error "Binary not found at $BINARY_FILE"
+        error "Binary not found: $BINARY_FILE"
+        error "Make sure project is built successfully"
         exit 1
     fi
 
-    log "Starting endee server..."
+    ########################################
+    # EXPORT ENV (IMPORTANT FOR C++)
+    ########################################
+    export NDD_DATA_DIR
+    export NDD_AUTH_TOKEN
 
-    # RUN binary
+    ########################################
+    # RENDER COMPATIBILITY (PORT FIX)
+    ########################################
+    export PORT=${PORT:-8080}
+
+    log "Starting Endee Server..."
+    log "Binary: $BINARY_FILE"
+    log "DATA_DIR: $NDD_DATA_DIR"
+    log "AUTH_TOKEN: ${NDD_AUTH_TOKEN:+SET}"
+
+    ########################################
+    # RUN SERVER
+    ########################################
     exec "$BINARY_FILE"
 }
 
