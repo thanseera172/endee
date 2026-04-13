@@ -5,16 +5,32 @@ project(endee)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Main binary (MUST MATCH run.sh)
+# =========================
+# MAIN EXECUTABLE
+# =========================
 add_executable(endee
     src/main.cpp
 )
 
-# Boost support (Crow dependency)
+# =========================
+# BOOST (required by Crow internally)
+# =========================
 find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
+target_include_directories(endee PRIVATE ${Boost_INCLUDE_DIRS})
 
-# Optional Crow local include (if installed via install.sh)
-if(EXISTS "${CMAKE_SOURCE_DIR}/external/Crow")
-    include_directories(${CMAKE_SOURCE_DIR}/external/Crow/include)
-endif()
+# =========================
+# CROW (FIXED PROPER WAY)
+# =========================
+
+include(FetchContent)
+
+FetchContent_Declare(
+    crow
+    GIT_REPOSITORY https://github.com/CrowCpp/Crow.git
+    GIT_TAG v1.2.0
+)
+
+FetchContent_MakeAvailable(crow)
+
+# Link Crow properly
+target_link_libraries(endee PRIVATE Crow::Crow)
