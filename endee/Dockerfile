@@ -1,9 +1,10 @@
 FROM ubuntu:22.04
 
-# Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install base tools required by install.sh
+# -----------------------------
+# 1. INSTALL ALL REQUIRED TOOLS
+# -----------------------------
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -15,25 +16,43 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     software-properties-common \
     sudo \
-    ca-certificates
+    ca-certificates \
+    clang-19 \
+    clang++-19 \
+    llvm \
+    libssl-dev \
+    libcurl4-openssl-dev
 
+# -----------------------------
+# 2. FORCE CLANG AS DEFAULT
+# -----------------------------
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-19 100 && \
+    update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-19 100
+
+ENV CC=clang-19
+ENV CXX=clang++-19
+
+# -----------------------------
+# 3. PROJECT SETUP
+# -----------------------------
 WORKDIR /app
-
 COPY . .
 
-# Fix permissions (IMPORTANT)
 RUN chmod +x install.sh run.sh
 
 # -----------------------------
-# CRITICAL FIX FOR RENDER
+# 4. RUN INSTALL SCRIPT SAFELY
 # -----------------------------
+RUN bash install.sh --skip-deps || true
 
-# 1. Avoid clang-19 install failure causing crash
-# 2. Let script continue even if some OS steps fail
-RUN bash -c "./install.sh --skip-deps || true"
+# -----------------------------
+# 5. BUILD PROJECT
+# -----------------------------
+RUN mkdir -p build && cd build && \
+    cmake .. -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 && \
+    make -j$(nproc)
 
-# Build manually AFTER script (ensures reliability)
-RUN mkdir -p build && cd build && cmake .. && make -j$(nproc) || true
-
-# Ensure run.sh starts server
+# -----------------------------
+# 6. RUN SERVER
+# -----------------------------
 CMD ["bash", "run.sh"]
