@@ -10,6 +10,11 @@ COPY . .
 
 RUN chmod +x install.sh run.sh
 
-RUN ./install.sh || true
+# IMPORTANT: pass proper build mode
+RUN ./install.sh --release --skip-deps
 
-CMD ["bash", "run.sh"]
+# build explicitly (VERY IMPORTANT)
+RUN mkdir -p build && cd build && cmake .. && make
+
+# tell Render what to run
+CMD ["./build/endee"]
