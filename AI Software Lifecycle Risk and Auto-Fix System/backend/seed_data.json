@@ -1,0 +1,22 @@
+[
+  {
+    "text": "Firebase single backend causes system failure during outage. Use multi-region database replication.",
+    "tag": "backend-risk"
+  },
+  {
+    "text": "Stripe API downtime blocks payments. Always implement fallback payment gateway like Razorpay or PayPal.",
+    "tag": "payment-risk"
+  },
+  {
+    "text": "Monolithic architecture fails under scaling pressure. Use microservices or modular architecture.",
+    "tag": "architecture-risk"
+  },
+  {
+    "text": "External API dependency causes runtime failure. Always add retry logic and caching layer.",
+    "tag": "api-risk"
+  },
+  {
+    "text": "Database overload leads to slow system response. Use indexing, caching, and load balancing.",
+    "tag": "database-risk"
+  }
+]
